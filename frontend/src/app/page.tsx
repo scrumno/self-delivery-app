@@ -2,7 +2,7 @@
 
 import {api} from "@/shared";
 import {useQuery} from "@tanstack/react-query";
-import {TelegramAuthButton} from "@/features/auth";
+import {TelegramLoginButton} from "@advanceddev/telegram-login-react";
 
 type HealthResponse = {
     message: string,
@@ -20,7 +20,10 @@ export default function Home() {
         <p>Ответ от Go:
             <b> {isLoading ? 'Загрузка...' : data?.data.message}</b>
         </p>
-          <TelegramAuthButton buttonSize={'large'} requestAccess={true}/>
+          <TelegramLoginButton
+              botUsername="autopost_auth_bot"
+              onAuthCallback={(user) => alert(`Hello, ${user.first_name}!`)}
+          />
       </main>
   )
 }

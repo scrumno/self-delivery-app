@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@advanceddev/telegram-login-react@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@advanceddev/telegram-login-react/-/telegram-login-react-1.2.0.tgz#9f63bc3e8e2fdf026c021dff09ad979de87e7c8d"
+  integrity sha512-aUq62ECn4Y1DT5YeZ/E8MIW6Lvf9Mn0XFMmHOf0FMJ494yo8yhC3R5X9F8drQ+stIUDATMQ7yMhDAPucBkymNw==
+
 "@alloc/quick-lru@^5.2.0":
   version "5.2.0"
   resolved "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz"
