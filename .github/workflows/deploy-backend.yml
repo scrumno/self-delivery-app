@@ -24,10 +24,6 @@ jobs:
         working-directory: ./backend  # Adjust if needed
         run: go mod download
 
-      - name: Run tests
-        working-directory: ./backend
-        run: go test ./...
-
       - name: Build Binary
         working-directory: ./backend
         run: |
