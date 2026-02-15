@@ -1,0 +1,48 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main  # Или master, как у тебя называется ветка
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Build Binary
+        run: |
+          # Компилируем под Linux (даже если у тебя Mac/Windows)
+          GOOS=linux GOARCH=amd64 go build -o app ./cmd/main.go 
+          # ⚠️ ВАЖНО: замени ./cmd/main.go на путь к твоему main.go
+
+      - name: Copy binary to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "app"
+          target: "/home/${{ secrets.VPS_USERNAME }}/app/backend"
+
+      - name: Restart Service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Даем права на исполнение (на всякий случай)
+            chmod +x /home/${{ secrets.VPS_USERNAME }}/delivery-backend/app
+            # Перезапускаем сервис
+            sudo systemctl restart delivery-backend
+            # Проверяем статус (опционально)
+            systemctl status delivery-backend --no-pager
