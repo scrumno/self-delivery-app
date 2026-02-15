@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "scrumno-api-collection",
+		"name": "Scrumno API",
+		"description": "Коллекция запросов для API Scrumno. Базовый URL: `{{baseUrl}}/api/v1`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Check DB connection",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"description": "Access JWT (обязателен)"
+							}
+						],
+						"url": "{{baseUrl}}/api/v1/health/check-status-db-connect",
+						"description": "Проверка подключения к базе данных.\n\n**Защищено:** да (Bearer access_token).\n\n**Ответ 200:** `{\"message\": \"Подключение к базе данных - окей\"}`\n**Ответ 503:** ошибка соединения с БД."
+					}
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const json = pm.response.json();",
+									"    if (json.access_token) pm.collectionVariables.set('access_token', json.access_token);",
+									"    if (json.refresh_token) pm.collectionVariables.set('refresh_token', json.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"79996663355\",\n  \"password\": \"your_password\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/users/login",
+						"description": "Вход по номеру телефона и паролю.\n\n**Тело запроса:**\n- `username` (string) — номер телефона, 11 цифр, первая 7 (например 79996663355).\n- `password` (string) — пароль.\n\n**Ответ 200:** access_token, refresh_token, expires_in (900 сек).\n**Ответ 400:** неверный формат телефона или логин/пароль."
+					}
+				},
+				{
+					"name": "Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    if (json.access_token) pm.collectionVariables.set('access_token', json.access_token);",
+									"    if (json.refresh_token) pm.collectionVariables.set('refresh_token', json.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"79996663355\",\n  \"password\": \"secret123\",\n  \"full_name\": \"Иван Иванов\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/users/signup",
+						"description": "Регистрация нового пользователя.\n\n**Тело запроса:**\n- `username` (string) — номер телефона (11 цифр, первая 7).\n- `password` (string) — пароль (обязателен).\n- `full_name` (string) — имя (опционально).\n\n**Ответ 201:** access_token, refresh_token, expires_in.\n**Ответ 400:** неверный формат телефона или пустой пароль.\n**Ответ 409:** пользователь с таким номером уже существует."
+					}
+				},
+				{
+					"name": "Refresh tokens",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const json = pm.response.json();",
+									"    if (json.access_token) pm.collectionVariables.set('access_token', json.access_token);",
+									"    if (json.refresh_token) pm.collectionVariables.set('refresh_token', json.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/users/refresh",
+						"description": "Обмен refresh_token на новую пару access + refresh.\n\n**Тело запроса:**\n- `refresh_token` (string) — текущий refresh токен.\n\n**Ответ 200:** новый access_token, refresh_token, expires_in.\n**Ответ 400:** refresh_token не передан или это не refresh токен.\n**Ответ 401:** токен невалидный, истёкший или отозван."
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get all users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"description": "Access JWT (обязателен)"
+							}
+						],
+						"url": "{{baseUrl}}/api/v1/users",
+						"description": "Список всех пользователей.\n\n**Защищено:** да (Bearer access_token).\n\n**Ответ 200:** массив объектов User (id, username, full_name, created_at, updated_at). Поле password не возвращается.\n**Ответ 500:** ошибка БД."
+					}
+				},
+				{
+					"name": "Get user by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"description": "Access JWT (обязателен)"
+							}
+						],
+						"url": "{{baseUrl}}/api/v1/users/1",
+						"description": "Получить пользователя по ID.\n\n**Защищено:** да (Bearer access_token).\n**Path:** `id` — числовой ID пользователя.\n\n**Ответ 200:** объект User (id, username, full_name, created_at, updated_at).\n**Ответ 400:** ID не передан или некорректный.\n**Ответ 404:** пользователь не найден."
+					}
+				}
+			]
+		}
+	]
+}

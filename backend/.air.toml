@@ -1,6 +1,7 @@
 #:schema https://json.schemastore.org/any.json
 
-env_files = []
+# Загружаем .env.local в процесс (путь от root = backend)
+env_files = [".env.local"]
 root = "."
 testdata_dir = "testdata"
 tmp_dir = "tmp"

@@ -1,59 +1,61 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	"github.com/scrumno/scrumno-api/config"
+	v1 "github.com/scrumno/scrumno-api/internal/api/v1"
+	jwtEntity "github.com/scrumno/scrumno-api/internal/users/auth/jwt/entity"
+	"github.com/scrumno/scrumno-api/internal/users/user/entity/user"
 )
 
-// Response Структура ответа JSON
-type Response struct {
-	Message string `json:"message"`
-}
-
 func main() {
-	// 1. Инициализация логгера (JSON формат удобен для продакшена/CloudWatch/ELK)
+	_ = godotenv.Load(".env.local")
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("backend/.env.local")
+	_ = godotenv.Load("backend/.env")
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}))
+	slog.SetDefault(logger)
 
-	// 2. Создаем роутер Gorilla
-	r := mux.NewRouter()
+	cfg := config.Load()
+	if err := config.Connect(cfg); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
-	// 3. Регистрируем хендлер
-	r.HandleFunc("/api/v1/health/simple-check-status", func(w http.ResponseWriter, r *http.Request) {
-		// Логируем запрос
-		logger.Info("Health check requested",
-			"method", r.Method,
-			"remote_addr", r.RemoteAddr,
-		)
+	if err := config.Migrate(&user.User{}, &jwtEntity.UserToken{}); err != nil {
+		logger.Error("миграция БД", "error", err)
+		os.Exit(1)
+	}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+	defer func() {
+		err := config.Close()
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}()
 
-		// Отправляем JSON
-		json.NewEncoder(w).Encode(Response{
-			Message: "hello world",
-		})
-	}).Methods("GET")
-
-	// 4. Настройки сервера
+	router := v1.SetupRouter(cfg)
+	addr := ":" + cfg.Server.Port
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         ":8080",
+		Handler:      router,
+		Addr:         addr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	logger.Info("Server started", "address", ":8080", "go_version", "1.25.7")
+	logger.Info("Сервер запущен", "address", addr)
 
-	// 5. Запуск
-	if err := srv.ListenAndServe(); err != nil {
-		logger.Error("Server failed", "error", err)
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		logger.Error("Сервер не запустился", "error", err)
 		os.Exit(1)
 	}
 }
