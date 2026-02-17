@@ -10,8 +10,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/scrumno/scrumno-api/config"
 	v1 "github.com/scrumno/scrumno-api/internal/api/v1"
-	jwtEntity "github.com/scrumno/scrumno-api/internal/users/auth/jwt/entity"
-	"github.com/scrumno/scrumno-api/internal/users/user/entity/user"
 )
 
 func main() {
@@ -31,7 +29,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := config.Migrate(&user.User{}, &jwtEntity.UserToken{}); err != nil {
+	config.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
+	if err := config.Migrate(); err != nil {
 		logger.Error("миграция БД", "error", err)
 		os.Exit(1)
 	}
