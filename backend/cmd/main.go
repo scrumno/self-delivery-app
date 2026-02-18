@@ -10,6 +10,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/scrumno/scrumno-api/config"
 	v1 "github.com/scrumno/scrumno-api/internal/api/v1"
+	"github.com/scrumno/scrumno-api/internal/users/entity/session"
+	staffrole "github.com/scrumno/scrumno-api/internal/users/entity/staff-role"
+	"github.com/scrumno/scrumno-api/internal/users/entity/user"
 )
 
 func main() {
@@ -31,7 +34,11 @@ func main() {
 
 	config.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 
-	if err := config.Migrate(); err != nil {
+	if err := config.Migrate(
+		&user.User{},
+		&staffrole.StaffRole{},
+		&session.Session{},
+	); err != nil {
 		logger.Error("миграция БД", "error", err)
 		os.Exit(1)
 	}
@@ -43,7 +50,9 @@ func main() {
 		}
 	}()
 
-	router := v1.SetupRouter(cfg)
+	actions := config.DI()
+
+	router := v1.SetupRouter(cfg, actions)
 	addr := ":" + cfg.Server.Port
 	srv := &http.Server{
 		Handler:      router,
