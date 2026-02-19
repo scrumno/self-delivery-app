@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/scrumno/scrumno-api/config"
 	"github.com/scrumno/scrumno-api/internal/api/v1/http/action"
-	healthAction "github.com/scrumno/scrumno-api/internal/api/v1/http/action/health"
 	"github.com/scrumno/scrumno-api/internal/api/v1/middleware"
 )
 
@@ -18,9 +17,16 @@ func SetupRouter(cfg *config.Config, actions *action.Actions) *mux.Router {
 	api := router.PathPrefix("/api/v1").Subrouter()
 
 	health := api.PathPrefix("/health").Subrouter()
-	health.HandleFunc("/check-status-connect-db", healthAction.CheckStatusConnectDBAction).Methods("GET")
+	health.HandleFunc("/check-status-connect-db", actions.CheckStatusConnectDB.Action).Methods("GET")
 
 	userRouter := api.PathPrefix("/users").Subrouter()
-	userRouter.HandleFunc("/{id:[0-9]+}", actions.GetUserByID.Action).Methods("GET")
+	userRouter.HandleFunc("", actions.GetAllUsers.Action).Methods("GET")
+	userRouter.HandleFunc("/{id:[0-9a-fA-F-]+}", actions.GetUserByID.Action).Methods("GET")
+	userRouter.HandleFunc("/search", actions.GetUserByPhone.Action).Methods("GET")
+
+	userRouter.HandleFunc("", actions.CreateUser.Action).Methods("POST")
+	userRouter.HandleFunc("/{id:[0-9a-fA-F-]+}", actions.UpdateUser.Action).Methods("PATCH")
+	userRouter.HandleFunc("/{id:[0-9a-fA-F-]+}", actions.DeleteUser.Action).Methods("DELETE")
+
 	return router
 }
