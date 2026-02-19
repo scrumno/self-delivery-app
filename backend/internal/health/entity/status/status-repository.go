@@ -1,16 +1,27 @@
 package status
 
-import "github.com/scrumno/scrumno-api/config"
+import (
+	"gorm.io/gorm"
+)
 
-func Check() *Status {
-	sqlDB, err := config.DB.DB()
+type StatusRepositoryInterface interface {
+	CheckStatus() error
+}
+
+type StatusRepository struct {
+	db *gorm.DB
+}
+
+func NewStatusRepository(db *gorm.DB) *StatusRepository {
+	return &StatusRepository{db: db}
+}
+
+var _ StatusRepositoryInterface = (*StatusRepository)(nil)
+
+func (r *StatusRepository) CheckStatus() error {
+	sqlDB, err := r.db.DB()
 	if err != nil {
-		return &Status{IsConnected: false}
+		return err
 	}
-
-	if err := sqlDB.Ping(); err != nil {
-		return &Status{IsConnected: false}
-	}
-
-	return &Status{IsConnected: true}
+	return sqlDB.Ping()
 }

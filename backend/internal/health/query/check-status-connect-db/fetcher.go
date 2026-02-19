@@ -1,17 +1,22 @@
 package check_status_connect_db
 
-import "github.com/scrumno/scrumno-api/internal/health/entity/status"
+import (
+	"github.com/scrumno/scrumno-api/internal/health/entity/status"
+)
 
-func Fetcher() *Query {
-	s := status.Check()
+type StatusDTO struct {
+	IsConnected bool `json:"is_connected"`
+}
 
-	if s.IsConnected {
-		return &Query{
-			Status: true,
-		}
-	}
+type Fetcher struct {
+	repository status.StatusRepositoryInterface
+}
 
-	return &Query{
-		Status: false,
-	}
+func NewFetcher(repository status.StatusRepositoryInterface) *Fetcher {
+	return &Fetcher{repository: repository}
+}
+
+func (f *Fetcher) Fetch(_ Query) StatusDTO {
+	err := f.repository.CheckStatus()
+	return StatusDTO{IsConnected: err == nil}
 }
