@@ -6,7 +6,6 @@ services:
       POSTGRES_USER: scrumno
       POSTGRES_PASSWORD: 3003
       POSTGRES_DB: app
-      POSTGRES_INITDB_ARGS: "--locale=C"
     ports:
       # 5433 чтобы не конфликтовать с локальным PostgreSQL на хосте
       - "5433:5432"

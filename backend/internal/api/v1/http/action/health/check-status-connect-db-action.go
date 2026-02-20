@@ -4,19 +4,24 @@ import (
 	"net/http"
 
 	"github.com/scrumno/scrumno-api/internal/api/utils"
-	checkStatusConnectDB "github.com/scrumno/scrumno-api/internal/health/query/check-status-connect-db"
+	checkStatus "github.com/scrumno/scrumno-api/internal/health/query/check-status-connect-db"
 )
 
-type response struct {
-	IsOk bool `json:"isOk"`
+type CheckStatusConnectDBAction struct {
+	fetcher *checkStatus.Fetcher
 }
 
-func CheckStatusConnectDBAction(responseWriter http.ResponseWriter, request *http.Request) {
-	res := checkStatusConnectDB.Fetcher()
+func NewCheckStatusConnectDBAction(fetcher *checkStatus.Fetcher) *CheckStatusConnectDBAction {
+	return &CheckStatusConnectDBAction{fetcher: fetcher}
+}
 
-	if !res.Status {
-		utils.JSONResponse(responseWriter, response{IsOk: false}, http.StatusInternalServerError)
+func (a *CheckStatusConnectDBAction) Action(w http.ResponseWriter, _ *http.Request) {
+	dto := a.fetcher.Fetch(checkStatus.Query{})
+
+	if !dto.IsConnected {
+		utils.JSONResponse(w, map[string]bool{"isOk": false}, http.StatusInternalServerError)
+		return
 	}
 
-	utils.JSONResponse(responseWriter, response{IsOk: true}, http.StatusOK)
+	utils.JSONResponse(w, map[string]bool{"isOk": true}, http.StatusOK)
 }

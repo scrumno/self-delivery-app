@@ -30,6 +30,8 @@ var DB *gorm.DB
 
 func Connect(cfg *Config) error {
 	var err error
+	dsn := cfg.Database.DSN()
+	slog.Info("Подключение к БД", "dsn", dsn)
 
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -38,7 +40,7 @@ func Connect(cfg *Config) error {
 		},
 	}
 
-	DB, err = gorm.Open(postgres.Open(cfg.Database.DSN()), gormConfig)
+	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
 		return err
 	}
