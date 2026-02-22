@@ -1,19 +1,20 @@
 package create_user
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type Command struct {
-	Phone    string  `json:"phone"`
-	FullName *string `json:"full_name,omitempty"`
+type CreateUserCommand struct {
+	Phone string
 }
 
 type UserDTO struct {
-	ID        uuid.UUID `json:"id"`
-	Phone     string    `json:"phone"`
-	FullName  *string   `json:"full_name,omitempty"`
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID  `json:"id"`
+	Phone     string     `json:"phone"`
+	FullName  *string    `json:"full_name,omitempty"`
+	BirthDate *time.Time `json:"birth_date"`
+	IsActive  bool       `json:"is_active"`
+	CreatedAt time.Time  `json:"created_at"`
 }
