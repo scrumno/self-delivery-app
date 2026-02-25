@@ -1,33 +1,33 @@
 package create_user
 
 import (
+	"context"
+
 	"github.com/scrumno/scrumno-api/internal/users/entity/user"
+	"github.com/scrumno/scrumno-api/shared/base"
 )
 
-type Handler struct {
-	repository user.UserRepositoryInterface
+type CreateUserHandler struct {
+	repo base.BaseRepository[user.User]
 }
 
-func NewHandler(repository user.UserRepositoryInterface) *Handler {
-	return &Handler{repository: repository}
+func NewCreateUserHandler(repo base.BaseRepository[user.User]) *CreateUserHandler {
+	return &CreateUserHandler{repo: repo}
 }
 
-func (h *Handler) Handle(cmd Command) (UserDTO, error) {
-	u := user.User{
-		Phone:    cmd.Phone,
-		FullName: cmd.FullName,
-	}
+func (handler *CreateUserHandler) Handle(ctx context.Context, cmd CreateUserCommand) (UserDTO, error) {
+	newUser := user.NewUser(cmd.Phone)
 
-	created, err := h.repository.Create(u)
-	if err != nil {
+	if err := handler.repo.Create(ctx, newUser); err != nil {
 		return UserDTO{}, err
 	}
 
 	return UserDTO{
-		ID:        created.ID,
-		Phone:     created.Phone,
-		FullName:  created.FullName,
-		IsActive:  created.IsActive,
-		CreatedAt: created.CreatedAt,
+		ID:        newUser.ID,
+		Phone:     newUser.Phone,
+		CreatedAt: newUser.CreatedAt,
+		BirthDate: newUser.BirthDate,
+		IsActive:  newUser.IsActive,
+		FullName:  newUser.FullName,
 	}, nil
 }

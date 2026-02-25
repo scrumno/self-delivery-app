@@ -10,10 +10,5 @@ type Actions struct {
 	CheckStatusConnectDB *health.CheckStatusConnectDBAction
 
 	// users
-	GetUserByID    *userAction.GetUserByIDAction
-	GetUserByPhone *userAction.GetUserByPhoneAction
-	GetAllUsers    *userAction.GetAllUsersAction
-	CreateUser     *userAction.CreateUserAction
-	UpdateUserById *userAction.UpdateUserByIdAction
-	DeleteUser     *userAction.DeleteUserAction
+	CreateUser *userAction.CreateUserAction
 }

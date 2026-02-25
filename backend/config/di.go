@@ -7,38 +7,27 @@ import (
 	"github.com/scrumno/scrumno-api/internal/health/entity/status"
 	checkStatusConnectDB "github.com/scrumno/scrumno-api/internal/health/query/check-status-connect-db"
 	createUser "github.com/scrumno/scrumno-api/internal/users/command/create-user"
-	deleteUser "github.com/scrumno/scrumno-api/internal/users/command/delete-user"
-	updateUserById "github.com/scrumno/scrumno-api/internal/users/command/update-user-by-id"
 	"github.com/scrumno/scrumno-api/internal/users/entity/user"
-	getAllUsers "github.com/scrumno/scrumno-api/internal/users/query/get-all-users"
-	getUserByID "github.com/scrumno/scrumno-api/internal/users/query/get-user-by-id"
-	getUserByPhone "github.com/scrumno/scrumno-api/internal/users/query/get-user-by-phone"
+	"github.com/scrumno/scrumno-api/shared/factory"
 )
 
 func DI() *action.Actions {
 	// repository
-	userRepo := user.NewUserRepository(DB)
-	statusRepo := status.NewStatusRepository(DB) // добавил
+	statusRepo := status.NewStatusRepository(DB)
+	userRepo := factory.NewGormRepository[user.User](DB)
+
 	// service
+	checkStatusFetcher := checkStatusConnectDB.NewFetcher(statusRepo)
 
 	// command
-	updateUserHandler := updateUserById.NewHandler(userRepo)
-	deleteUserHandler := deleteUser.NewHandler(userRepo) // добавил
-	createUserHandler := createUser.NewHandler(userRepo) // добавил
+	createUserHandler := createUser.NewCreateUserHandler(userRepo)
 
 	// query
-	getUserByIDFetcher := getUserByID.NewFetcher(userRepo)
-	getUserByPhoneFetcher := getUserByPhone.NewFetcher(userRepo)
-	getAllUsersFetcher := getAllUsers.NewFetcher(userRepo)            //добавил
-	checkStatusFetcher := checkStatusConnectDB.NewFetcher(statusRepo) //добавил
 
 	return &action.Actions{
-		CheckStatusConnectDB: healthAction.NewCheckStatusConnectDBAction(checkStatusFetcher), //добавил
-		GetUserByID:          userAction.NewGetUserByIDAction(getUserByIDFetcher),
-		GetUserByPhone:       userAction.NewGetUserByPhoneAction(getUserByPhoneFetcher),
-		GetAllUsers:          userAction.NewGetAllUsersAction(getAllUsersFetcher), // добавил
-		CreateUser:           userAction.NewCreateUserAction(createUserHandler),   // добавил
-		UpdateUserById:       userAction.NewUpdateUserByIdAction(updateUserHandler),
-		DeleteUser:           userAction.NewDeleteUserAction(deleteUserHandler), //добавил
+		CheckStatusConnectDB: healthAction.NewCheckStatusConnectDBAction(checkStatusFetcher),
+
+		// users
+		CreateUser: userAction.NewCreateUserAction(createUserHandler),
 	}
 }
