@@ -10,26 +10,26 @@
         ]
     },
     "info": {
-        "name": "/health API",
+        "name": "/users API",
         "description": "Сгенерированная коллекция API запросов для самовывоза",
         "version": "",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "health",
+            "name": "users",
             "item": [
                 {
-                    "name": "check-status-connect-db",
+                    "name": "users",
                     "request": {
                         "url": {
-                            "raw": "{{base_url}}/health/check-status-connect-db",
+                            "raw": "{{base_url}}/users/users",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
-                                "health",
-                                "check-status-connect-db"
+                                "users",
+                                "users"
                             ]
                         },
                         "method": "GET",
@@ -51,35 +51,41 @@
                     }
                 },
                 {
-                    "name": "check-1221",
-                    "request": {
-                        "url": {
-                            "raw": "{{base_url}}/health/check-1221",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "health",
-                                "check-1221"
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"full_name\": \"Иван Аресньев\",\n  \"phone\": \"79099000000\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
+                    "name": "usersusersuser",
+                    "item": [
+                        {
+                            "name": "us",
+                            "request": {
+                                "url": {
+                                    "raw": "{{base_url}}/users/usersusersuser/us",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "users",
+                                        "usersusersuser",
+                                        "us"
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"full_name\": \"Иван Аресньев\",\n  \"phone\": \"79099000000\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
+                    ]
                 }
             ]
         }

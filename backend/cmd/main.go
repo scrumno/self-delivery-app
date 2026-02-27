@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/scrumno/scrumno-api/config"
 	v1 "github.com/scrumno/scrumno-api/internal/api/v1"
-	"github.com/scrumno/scrumno-api/internal/users/entity/session"
+	// "github.com/scrumno/scrumno-api/internal/users/entity/session"
 	staffrole "github.com/scrumno/scrumno-api/internal/users/entity/staff-role"
 	"github.com/scrumno/scrumno-api/internal/users/entity/user"
 )
@@ -37,7 +37,7 @@ func main() {
 	if err := config.Migrate(
 		&user.User{},
 		&staffrole.StaffRole{},
-		&session.Session{},
+		// &session.Session{},
 	); err != nil {
 		logger.Error("миграция БД", "error", err)
 		os.Exit(1)
