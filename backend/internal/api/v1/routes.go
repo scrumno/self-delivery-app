@@ -2,6 +2,7 @@ package v1
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/scrumno/scrumno-api/config"
@@ -16,6 +17,9 @@ func SetupRouter(cfg *config.Config, actions *action.Actions) *mux.Router {
 
 	router.Use(middleware.Logging)
 	router.Use(middleware.CORS)
+	router.PathPrefix("/").Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
 
 	api := router.PathPrefix("/api/v1").Subrouter()
 

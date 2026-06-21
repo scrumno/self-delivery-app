@@ -10,23 +10,27 @@ import (
 	codes "github.com/scrumno/scrumno-api/internal/authorize/entity/codes"
 	getSmsCode "github.com/scrumno/scrumno-api/internal/authorize/query/get-sms-code"
 	getSmsCodeSendAvailable "github.com/scrumno/scrumno-api/internal/authorize/query/get-sms-code-send-available"
+	findUserByPhone "github.com/scrumno/scrumno-api/internal/authorize/query/find-user-by-phone"
 )
 
 type AuthCodeAction struct {
 	GetSmsCodeSendAvailableFetcher *getSmsCodeSendAvailable.Fetcher
 	GetSmsCodeFetcher              *getSmsCode.Fetcher
 	CreateAuthorizeCodeHandler     *createAuthorizeCode.Handler
+	FindUserByPhoneFetcher         *findUserByPhone.Fetcher
 }
 
 func NewAuthCodeAction(
 	getSmsCodeSendAvailableFetcher *getSmsCodeSendAvailable.Fetcher,
 	getSmsCodeFetcher *getSmsCode.Fetcher,
 	createAuthorizeCodeHandler *createAuthorizeCode.Handler,
+	findUserByPhoneFetcher *findUserByPhone.Fetcher,
 ) *AuthCodeAction {
 	return &AuthCodeAction{
 		GetSmsCodeSendAvailableFetcher: getSmsCodeSendAvailableFetcher,
 		GetSmsCodeFetcher:              getSmsCodeFetcher,
 		CreateAuthorizeCodeHandler:     createAuthorizeCodeHandler,
+		FindUserByPhoneFetcher:         findUserByPhoneFetcher,
 	}
 }
 
@@ -63,6 +67,33 @@ func (a *AuthCodeAction) Action(w http.ResponseWriter, r *http.Request) {
 		utils.JSONResponse(w, AuthCodeErrorResponse{
 			IsSuccess: false,
 			Error:     "Недопустимый тип кода",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	
+	user, err := a.FindUserByPhoneFetcher.Fetch(r.Context(), req.Phone)
+	if err != nil {
+		utils.JSONResponse(w, AuthCodeErrorResponse{
+			IsSuccess: false,
+			Error:     err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	if user == nil && req.CodeType == codes.AuthType {
+		utils.JSONResponse(w, AuthCodeErrorResponse{
+			IsSuccess: false,
+			Error:     "Пользователь не найден",
+			Code:      "USER_NOT_FOUND",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if user != nil && req.CodeType == codes.RegisterType {
+		utils.JSONResponse(w, AuthCodeErrorResponse{
+			IsSuccess: false,
+			Error:     "Не удалось получить код авторизации",
+			Code:      "USER_EXIST",
 		}, http.StatusBadRequest)
 		return
 	}
@@ -112,4 +143,5 @@ type AuthCodeResponse struct {
 type AuthCodeErrorResponse struct {
 	IsSuccess bool   `json:"isSuccess"`
 	Error     string `json:"error"`
+	Code      string `json:"code,omitempty"`
 }
