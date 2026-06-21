@@ -26,7 +26,9 @@ func (a *UpdateUserProfileAction) GetInputType() reflect.Type {
 }
 
 type UpdateUserProfileRequest struct {
-	FullName  *string `json:"fullName,omitempty"  example:"Пользователь"`
+	FirstName *string `json:"firstName,omitempty"  example:"Пользователь"`
+	SecondName  *string `json:"secondName,omitempty"  example:"Пользователь"`
+	Address *string `json:"address,omitempty"  example:"Пользователь"`
 	BirthDate *string `json:"birthDate,omitempty" example:"21.03.2026"`
 	IsActive  *bool   `json:"isActive,omitempty" example:"false"`
 	Email     *string `json:"email,omitempty" example:"user@example.com"`
@@ -45,9 +47,23 @@ func (a *UpdateUserProfileAction) Action(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	var fullName *string
+	firstName := ""
+	secondName := ""
+	if req.FirstName != nil {
+		firstName = strings.TrimSpace(*req.FirstName)
+	}
+	if req.SecondName != nil {
+		secondName = strings.TrimSpace(*req.SecondName)
+	}
+	combined := strings.TrimSpace(firstName + " " + secondName)
+	if combined != "" {
+		fullName = &combined
+	}
+
 	cmd := updateUserProfile.Command{
 		Phone:     claims.Phone,
-		FullName:  req.FullName,
+		FullName:  fullName,
 		IsActive:  req.IsActive,
 		Email:     req.Email,
 		BirthDate: nil,
