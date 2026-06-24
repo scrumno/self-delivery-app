@@ -52,21 +52,22 @@ func (a *RegistrationAction) Action(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// user, err := a.FindUserByPhoneFetcher.Fetch(r.Context(), req.Phone)
-	// if err != nil {
-	// 	utils.JSONResponse(w, RegistrationErrorResponse{
-	// 		IsSuccess: false,
-	// 		Error:     err.Error(),
-	// 	}, http.StatusBadRequest)
-	// 	return
-	// }
-	// if user != nil {
-	// 	utils.JSONResponse(w, RegistrationErrorResponse{
-	// 		IsSuccess: false,
-	// 		Error:     "Не удалось создать пользователя",
-	// 	}, http.StatusBadRequest)
-	// 	return
-	// }
+	user, err := a.FindUserByPhoneFetcher.Fetch(r.Context(), req.Phone)
+	if err != nil {
+		utils.JSONResponse(w, RegistrationErrorResponse{
+			IsSuccess: false,
+			Error:     err.Error(),
+		}, http.StatusBadRequest)
+		return
+	}
+	if user != nil {
+		utils.JSONResponse(w, RegistrationErrorResponse{
+			IsSuccess: false,
+			Error:     "Не удалось создать пользователя",
+			Code:      "USER_EXIST",
+		}, http.StatusBadRequest)
+		return
+	}
 
 	// cmd := checkOntimeCode.Command{
 	// 	Phone:    req.Phone,
@@ -132,4 +133,5 @@ type RegistrationResponse struct {
 type RegistrationErrorResponse struct {
 	IsSuccess bool   `json:"isSuccess"`
 	Error     string `json:"error"`
+	Code      string `json:"code,omitempty"`
 }

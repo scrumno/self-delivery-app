@@ -2,6 +2,7 @@ package entity
 
 import (
 	"context"
+	"errors"
 
 	factory "github.com/scrumno/scrumno-api/shared/factories/gorm"
 	"github.com/scrumno/scrumno-api/shared/interfaces/base"
@@ -37,7 +38,10 @@ func (r *registrationGormRepository) FindByPhone(ctx context.Context, phone stri
 		First(&u).Error
 
 	if err != nil {
-		return nil, nil
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	return &u, nil

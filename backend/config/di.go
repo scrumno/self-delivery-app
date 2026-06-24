@@ -75,7 +75,7 @@ import (
 	fileStorage "github.com/scrumno/scrumno-api/shared/services/storage"
 
 	// Customer
-	customer "github.com/scrumno/scrumno-api/infrastructure/integration-system/iiko/customer/service"
+	// customer "github.com/scrumno/scrumno-api/infrastructure/integration-system/iiko/customer/service"
 	order "github.com/scrumno/scrumno-api/infrastructure/integration-system/iiko/order-delivery/service"
 	getCategories "github.com/scrumno/scrumno-api/internal/menu/query/get-categories"
 	getSections "github.com/scrumno/scrumno-api/internal/menu/query/get-sections"
@@ -97,9 +97,9 @@ func DI() (*action.Actions, *action.Listeners) {
 		snapshotStore   interfaces.SnapshotStore
 
 		//customer
-		cBuilder  interfaces.CustomerBodyBuilder
-		cProvider interfaces.CustomerProvider
-		cSync     interfaces.CustomerSyncService
+		// cBuilder  interfaces.CustomerBodyBuilder
+		// cProvider interfaces.CustomerProvider
+		// cSync     interfaces.CustomerSyncService
 
 		menuProvider interfaces.MenuProvider
 
@@ -124,9 +124,9 @@ func DI() (*action.Actions, *action.Listeners) {
 		snapshotService = snapshot.NewSnapshotService(snapshotStore)
 
 		//customer
-		cBuilder = customer.NewCustomerBodyBuilder(iikoCfg)
-		cProvider = customer.NewCustomerProvider(iikoCfg)
-		cSync = customer.NewCustomerSyncService(cBuilder, cProvider)
+		// cBuilder = customer.NewCustomerBodyBuilder(iikoCfg)
+		// cProvider = customer.NewCustomerProvider(iikoCfg)
+		// cSync = customer.NewCustomerSyncService(cBuilder, cProvider)
 
 		//order
 		orderBuilder = order.NewOrderBodyBuilder(iikoCfg)
@@ -175,10 +175,14 @@ func DI() (*action.Actions, *action.Listeners) {
 
 	// command
 	conditionsProfilePolicy := conditionsUpdateProfilePolicy.NewHandler()
-	updateUserProfileHandler := updateUserProfile.NewHandler(registrationRepo, conditionsProfilePolicy, cSync)
+	// Регистрация: CustomerSync (iiko) отключён — SyncGet/Sync в create-user могут долго висеть
+	// на внешнем API и приводить к невыполненному ответу / timeout на клиенте.
+	updateUserProfileHandler := updateUserProfile.NewHandler(registrationRepo, conditionsProfilePolicy, nil)
 	logoutHandler := logout.NewHandler(tokensRepo)
 	checkOntimeCodeHandler := checkOntimeCode.NewHandler(codesRepo)
-	createUserAuthHandler := createUserAuth.NewHandler(registrationRepo, cSync)
+	// Регистрация: CustomerSync (iiko) отключён — SyncGet/Sync в create-user могут долго висеть
+	// на внешнем API и приводить к невыполненному ответу / timeout на клиенте.
+	createUserAuthHandler := createUserAuth.NewHandler(registrationRepo, nil)
 	createAuthorizeTokensHandler := createAuthorizeTokens.NewHandler(tokensRepo, jwtManager)
 	createAuthorizeCodeHandler := createAuthorizeCode.NewHandler(codesRepo, createUniqueCodeSvc)
 
@@ -265,7 +269,7 @@ func DI() (*action.Actions, *action.Listeners) {
 			RefreshTokens: authAction.NewRefreshTokensAction(getRefreshTokensFetcher, findUserByPhoneFetcher, createAuthorizeTokensHandler),
 
 			JWTManager: jwtManager,
-			SmsCode:    authAction.NewAuthCodeAction(getSmsCodeSendAvailableFetcher, getSmsCodeFetcher, createAuthorizeCodeHandler),
+			SmsCode:    authAction.NewAuthCodeAction(getSmsCodeSendAvailableFetcher, getSmsCodeFetcher, createAuthorizeCodeHandler, findUserByPhoneFetcher),
 
 			// orders
 			CreateOrder:      orders.NewCreateOrderAction(createOrderHandler, findUserByPhoneFetcher, getCartFetcher),
